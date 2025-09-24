@@ -21,6 +21,7 @@ export class AppComponent implements OnInit {
 
   buildingTypes = {};
   vehicleTypes = {};
+  realBuildingTypes = {};
 
   constructor(private http: HttpClient) {
     // this.table.containerViewChild.nativeElement.addEventListener('scroll', () => {
@@ -65,6 +66,34 @@ export class AppComponent implements OnInit {
           building.vehicleDiff = [];
           building.personalPasst = true;
 
+          // Get Missing Extentions
+          building.extensions.forEach(ext => {
+            if(this.buildingTypes[building.type].extensions && this.buildingTypes[building.type].extensions.includes(ext.type_id)) {
+              ext.needed = true;
+              if(ext.available == false) {
+                ext.missing = true;
+              } else {
+                ext.missing = false;
+              }
+            } else {
+              ext.needed = false;
+              ext.missing = false;
+            }
+          });
+
+          building.extensionsPasst = building.extensions.filter(x => x.needed && x.missing).length == 0;
+
+          // if (this.buildingTypes[building.type] && this.buildingTypes[building.type].extensions && this.realBuildingTypes[building.building_type]) {
+          //   building.missingExtensions = [];
+          //   this.buildingTypes[building.type].extensions.forEach(ext => {
+          //     const exte = building.extensions.find(x => x.type_id == ext);
+          //     if (!exte || exte.available == false) {
+          //       building.missingExtensions.push(ext);
+          //     }
+          //   });
+          // }
+          // building.extensionsPasst = building.missingExtensions ? (building.missingExtensions.length == 0 ? true : false) : true;
+
           // Schulen & KHs (1 || 3 || 8 || 10)
           if (building.building_type == 1 || building.building_type == 3 || building.building_type == 4 || building.building_type == 8 || building.building_type == 10) {
             building.level += building.extensions.length;
@@ -86,7 +115,7 @@ export class AppComponent implements OnInit {
                 building.personalPasst = false;
               }
 
-              if(existingVeh.fms_real == 6) {
+              if (existingVeh.fms_real == 6) {
                 building.personalPasst = false;
               }
 
@@ -119,7 +148,7 @@ export class AppComponent implements OnInit {
 
   filterBuildings(yepp) {
     this.filterFinished = yepp;
-    if (yepp) this.buildingsTable = this.buildings.filter(x => x.vehicleDiff.length != 0 || !x.personalPasst || x.increaseLevel);
+    if (yepp) this.buildingsTable = this.buildings.filter(x => x.vehicleDiff.length != 0 || !x.personalPasst || x.increaseLevel || !x.extensionsPasst);
     else this.buildingsTable = this.buildings;
   }
 
@@ -138,14 +167,16 @@ export class AppComponent implements OnInit {
   }
   openVehicleStatusTab(vehicleId, status) {
     window.open(`https://www.leitstellenspiel.de/vehicles/${vehicleId}/set_fms/${status == 6 ? "2" : "6"}`, '_blank', 'noreferrer');
-
+  }
+  openUpgradeTab(buildingId, level) {
+    window.open(`https://www.leitstellenspiel.de/buildings/${buildingId}/expand_do/credits?level=${level - 1}`, '_blank', 'noreferrer');
   }
 
   defaultShit() {
     // Gebäude
     // Die buildingTypes beziehen sich auf die von uns festgelegte Zahl am Anfang des Namens des Gebäudes.
     this.buildingTypes['10'] = {
-      name: "Feuerwache", maxLevel: "16", vehicles: [
+      name: "Feuerwache", maxLevel: "19", vehicles: [
         { type: 2, count: 1 }, // DLK23
         { type: 3, count: 1 }, // ELW1
         { type: 5, count: 1 }, // GW-A
@@ -159,10 +190,10 @@ export class AppComponent implements OnInit {
         { type: 53, count: 1 }, // DekonP
         { type: 57, count: 1 }, // FWK
         { type: 74, count: 1 } // NAW
-      ]
+      ], extensions: [0]
     };
     this.buildingTypes['11'] = {
-      name: "Flughafen Feuerwehr", maxLevel: "16", vehicles: [
+      name: "Flughafen Feuerwehr", maxLevel: "19", vehicles: [
         { type: 2, count: 1 }, // DLK23
         { type: 3, count: 1 }, // ELW1
         { type: 30, count: 5 }, // HLF20
@@ -171,10 +202,10 @@ export class AppComponent implements OnInit {
         { type: 10, count: 1 }, // GW-Öl
         { type: 5, count: 1 }, // GW-A
         { type: 34, count: 1 } // ELW2
-      ]
+      ], extensions: [0, 8]
     };
     this.buildingTypes['12'] = {
-      name: "Werkfeuerwehr", maxLevel: "16", vehicles: [
+      name: "Werkfeuerwehr", maxLevel: "19", vehicles: [
         { type: 3, count: 1 }, // ELW1
         { type: 5, count: 1 }, // GW-A
         { type: 10, count: 1 }, // GW-Öl
@@ -188,7 +219,7 @@ export class AppComponent implements OnInit {
         { type: 84, count: 1 }, // ULF-L
         { type: 85, count: 1 }, // TM50
         { type: 86, count: 1 }, // TULF
-      ]
+      ], extensions: [0, 13]
     };
     this.buildingTypes['20'] = {
       name: "Rettungswache", maxLevel: "14", vehicles: [
@@ -243,11 +274,12 @@ export class AppComponent implements OnInit {
         { type: 94, count: 3 } // DHuFüKw
       ]
     };
-    this.buildingTypes['33'] = { 
+    this.buildingTypes['33'] = {
       name: "POLHELI", maxLevel: "20", vehicles: [
         { type: 61, count: 1 } // Polizeihubschrauber
-      ] };
-    this.buildingTypes['40'] = { 
+      ]
+    };
+    this.buildingTypes['40'] = {
       name: "THW", maxLevel: "20", vehicles: [ // HIER ZAHLEN EINTRAGEN
         { type: 39, count: 2 }, // GKW
         { type: 40, count: 2 }, // MTW-TZ
@@ -264,15 +296,17 @@ export class AppComponent implements OnInit {
         { type: 92, count: 2 }, // Anh Hund
         { type: 93, count: 2 } // MTW-OV
 
-      ] };
-    this.buildingTypes['50'] = { 
+      ]
+    };
+    this.buildingTypes['50'] = {
       name: "DLRG", maxLevel: "1", vehicles: [
         { type: 69, count: 2 }, // Tauchkraftwagen
         { type: 66, count: 2 }, // Anh MZB
         { type: 64, count: 1 }, // GW-Wasserrettung
-      ] };
+      ]
+    };
 
-    this.buildingTypes['80'] = { name: "Krankenhaus", maxLevel: "29", vehicles: [] };
+    this.buildingTypes['80'] = { name: "Krankenhaus", maxLevel: "29", vehicles: [], extensions: [0, 1, 2, 3, 4, 5, 6, 7, 8] };
 
     this.buildingTypes['90'] = { name: "Schule", maxLevel: "3", vehicles: [] };
     this.buildingTypes['91'] = { name: "Schule", maxLevel: "3", vehicles: [] };
@@ -339,5 +373,30 @@ export class AppComponent implements OnInit {
     this.vehicleTypes['69'] = { name: 'Tauchkraftwagen', minPersonal: 1 };
     this.vehicleTypes['92'] = { name: 'Anh Hund', minPersonal: 1 };
     this.vehicleTypes['93'] = { name: 'MTW-OV', minPersonal: 1 };
+
+    this.realBuildingTypes['0'] = {
+      name: "Feuerwache", extensions: {
+        0: "Rettungsdienst",
+        8: "Flughafenfeuerwehr",
+        13: "Werkfeuerwehr"
+      }
+    };
+
+    this.realBuildingTypes['4'] = {
+      name: "Krankenhaus", extensions: {
+        0: "Allgemeine Innere",
+        1: "Allgemeine Chirugie",
+        2: "Gynäkologie",
+        3: "Urologie",
+        4: "Unfallchirugie",
+        5: "Neurologie",
+        6: "Neurochirugie",
+        7: "Kardiologie",
+        8: "Kardiochirugie",
+        9: "Test"
+      }
+    };
+
   }
+
 }

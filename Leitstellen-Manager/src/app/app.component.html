@@ -74,9 +74,11 @@
         Name: {{selectedBuilding ? selectedBuilding.name : ''}}<br />
         Lst: {{selectedBuilding ? selectedBuilding.leitstelle_building_id : ''}}<br />
         Level: {{selectedBuilding ? selectedBuilding.level : ''}}<br />
-        Level passt? : {{selectedBuilding ? !selectedBuilding.increaseLevel : ''}}<br />
+        Level passt? : {{selectedBuilding ? !selectedBuilding.increaseLevel : ''}} <p-button class="p-mr-1"
+          label="Upgrade" (click)="openUpgradeTab(selectedBuilding.id, buildingTypes[selectedBuilding.type].maxLevel)"></p-button><br />
         Personal passt?: {{selectedBuilding ? selectedBuilding.personalPasst : ''}}<br />
         vehicleDiff passt (0)? : {{selectedBuilding ? selectedBuilding.vehicleDiff.length : ''}}<br />
+        Erweiterungen passt?: {{selectedBuilding ? selectedBuilding.extensionsPasst : ''}}
       </p-tabPanel>
       <p-tabPanel header="Fahrzeuge" *ngIf="selectedBuilding != null">
         <p-table [value]="selectedBuilding.vehicles">
@@ -93,15 +95,19 @@
             <tr>
               <td>{{vehicle.caption}}</td>
               <td>{{vehicle.vehicle_type}}</td>
-              <td><div [ngClass]="vehicle.fms_real == 6 ? 'redText' : ''">{{vehicle.fms_show}}</div></td>
+              <td>
+                <div [ngClass]="vehicle.fms_real == 6 ? 'redText' : ''">{{vehicle.fms_show}}</div>
+              </td>
               <td>
                 <div [ngClass]="!vehicle.personalPasst ? 'redText' : ''">
-                  {{vehicle.assigned_personnel_count}} (min. {{vehicleTypes[vehicle.vehicle_type] ? vehicleTypes[vehicle.vehicle_type].minPersonal : 'Fehler'}})</div>
+                  {{vehicle.assigned_personnel_count}} (min. {{vehicleTypes[vehicle.vehicle_type] ?
+                  vehicleTypes[vehicle.vehicle_type].minPersonal : 'Fehler'}})</div>
               </td>
               <td colspan="2">
                 <p-button class="p-mr-1" label="Übersicht" (click)="openVehicleTab(vehicle.id)"></p-button>
                 <p-button class="p-mr-1" label="Personal" (click)="openVehiclePersonalTab(vehicle.id)"></p-button>
-                <p-button class="p-mr-1" label="Status" (click)="openVehicleStatusTab(vehicle.id, vehicle.fms_real)"></p-button>
+                <p-button class="p-mr-1" label="Status"
+                  (click)="openVehicleStatusTab(vehicle.id, vehicle.fms_real)"></p-button>
               </td>
             </tr>
           </ng-template>
@@ -119,12 +125,14 @@
             </ng-template>
             <ng-template pTemplate="body" let-vehicle>
               <tr>
-                <td>{{vehicleTypes[vehicle.type] ? vehicleTypes[vehicle.type].name : 'Fehlendes Fahrzeug ' + vehicle.type}}</td>
+                <td>{{vehicleTypes[vehicle.type] ? vehicleTypes[vehicle.type].name : 'Fehlendes Fahrzeug ' +
+                  vehicle.type}}</td>
                 <td>
-                  {{vehicle.count < 0 ? abs(vehicle.count) + ' zu viel' : vehicle.count + (vehicle.count == 1 ? ' fehlt' : ' fehlen')}}
-                </td>
+                  {{vehicle.count < 0 ? abs(vehicle.count) + ' zu viel' : vehicle.count + (vehicle.count==1 ? ' fehlt'
+                    : ' fehlen' )}} </td>
                 <td>
-                  <p-button class="p-mr-2" label="Kaufen" (click)="openBuyVehicleTab(selectedBuilding.id, vehicle.type)"></p-button>
+                  <p-button class="p-mr-2" label="Kaufen"
+                    (click)="openBuyVehicleTab(selectedBuilding.id, vehicle.type)"></p-button>
                 </td>
               </tr>
             </ng-template>
